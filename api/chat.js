@@ -65,7 +65,23 @@ export default async function handler(req, res) {
     });
 
     const aiData = await aiRes.json();
-    const reply = aiData.choices[0].message.content;
+
+if (!aiRes.ok) {
+  console.log("OPENAI ERROR:", aiData);
+  return res.status(500).json({
+    error: "Errore OpenAI",
+    detail: aiData
+  });
+}
+
+const reply = aiData.choices?.[0]?.message?.content;
+
+if (!reply) {
+  return res.status(500).json({
+    error: "Risposta AI non valida",
+    detail: aiData
+  });
+}
 
     // 🔹 4. Incremento contatore
     await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${email}`, {
