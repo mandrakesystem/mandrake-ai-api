@@ -115,7 +115,7 @@ REGOLE OBBLIGATORIE:
     // 6. CHIAMATA GEMINI — stesso endpoint del vecchio originale /v1/ con gemini-2.5-flash
     console.log('GEMINI — chiamata con', contents.length, 'turns');
     const aiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
