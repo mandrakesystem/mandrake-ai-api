@@ -2,6 +2,16 @@
 export default async function handler(req, res) {
   console.log("DEBUG: GOOGLE_API_KEY =", process.env.GOOGLE_API_KEY);
 
+  // 🔹 Aggiungi CORS
+  res.setHeader('Access-Control-Allow-Origin', '*'); // puoi sostituire '*' con 'https://www.mandrakesystem.com'
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // 🔹 Gestione preflight OPTIONS
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   // ✅ Accetta solo POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -12,11 +22,8 @@ export default async function handler(req, res) {
   for await (const chunk of req) rawBody += chunk;
 
   let parsed;
-  try {
-    parsed = JSON.parse(rawBody);
-  } catch {
-    return res.status(400).json({ error: "Invalid JSON" });
-  }
+  try { parsed = JSON.parse(rawBody); } 
+  catch { return res.status(400).json({ error: "Invalid JSON" }); }
 
   const { email, message, apiKey: userKey } = parsed;
 
