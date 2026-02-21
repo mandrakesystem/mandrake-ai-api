@@ -131,8 +131,9 @@ REGOLE OBBLIGATORIE:
     console.log('GEMINI — status:', aiRes.status, '| error:', aiData?.error?.message || 'nessuno');
 
     if (!aiRes.ok) {
-      console.error('GEMINI ERROR:', JSON.stringify(aiData));
-      return res.status(500).json({ error: 'Errore Google AI', detail: aiData?.error?.message });
+      console.error('GEMINI ERROR FULL:', JSON.stringify(aiData));
+      // Ritorna il dettaglio completo al client per debug
+      return res.status(500).json({ error: 'Errore Google AI', detail: aiData?.error?.message, code: aiData?.error?.code, status: aiData?.error?.status });
     }
 
     const reply = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
