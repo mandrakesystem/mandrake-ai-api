@@ -1,5 +1,6 @@
 // api/chat.js
 export default async function handler(req, res) {
+  console.log("DEBUG: GOOGLE_API_KEY =", process.env.GOOGLE_API_KEY);
   // ✅ Accetta solo POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
