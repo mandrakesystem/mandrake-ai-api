@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Come ottenere la tua API Key Google Gemini — Mandrake Academy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #D0021B;
+      --red-dark: #a30015;
+      --bg: #0a0a0c;
+      --bg-card: #131315;
+      --bg-surface: #1c1c1f;
+      --text: #efefef;
+      --text-muted: #666;
+      --text-dim: #999;
+      --green: #22c55e;
+      --green-bg: rgba(34,197,94,0.07);
+      --green-border: rgba(34,197,94,0.2);
+      --border: rgba(255,255,255,0.06);
+      --font-h: 'Bebas Neue', sans-serif;
+      --font: 'Instrument Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── NOISE TEXTURE ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* ── HEADER ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,10,12,0.9);
+      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo {
+      font-family: var(--font-h);
+      font-size: 22px;
+      letter-spacing: 3px;
+      color: var(--red);
+      text-decoration: none;
+    }
+    .back-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .back-btn:hover { border-color: var(--red); color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      position: relative;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse at center, rgba(208,2,27,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(208,2,27,0.12);
+      border: 1px solid rgba(208,2,27,0.3);
+      color: #ff6b7a;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: var(--font-h);
+      font-size: clamp(36px, 6vw, 72px);
+      letter-spacing: 3px;
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+    .hero h1 span { color: var(--red); }
+    .hero p {
+      font-size: 17px;
+      color: var(--text-dim);
+      max-width: 540px;
+      margin: 0 auto 32px;
+    }
+    .time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 18px;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    .time-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+    /* ── REASSURANCE BOX ── */
+    .reassurance {
+      max-width: 680px;
+      margin: 0 auto 60px;
+      padding: 0 24px;
+    }
+    .reassurance-box {
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      animation: fadeUp .5s ease both;
+    }
+    .reassurance-box .icon {
+      font-size: 28px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .reassurance-box h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--green);
+      margin-bottom: 6px;
+    }
+    .reassurance-box p { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+    .reassurance-box strong { color: var(--text); }
+
+    /* ── STEPS ── */
+    .steps-section {
+      max-width: 720px;
+      margin: 0 auto 80px;
+      padding: 0 24px;
+    }
+    .steps-section h2 {
+      font-family: var(--font-h);
+      font-size: 32px;
+      letter-spacing: 2px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      animation: fadeUp .4s ease both;
+      transition: border-color .2s, box-shadow .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .step-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--red), transparent);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .step-card:hover { border-color: rgba(208,2,27,0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    .step-card:hover::before { opacity: 1; }
+
+    .step-card:nth-child(1) { animation-delay: .1s; }
+    .step-card:nth-child(2) { animation-delay: .2s; }
+    .step-card:nth-child(3) { animation-delay: .3s; }
+    .step-card:nth-child(4) { animation-delay: .4s; }
+
+    .step-num {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--red);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-h);
+      font-size: 22px;
+      letter-spacing: 1px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .step-body h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+    .step-body p { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+    .step-body a { color: #ff6b7a; text-decoration: none; font-weight: 600; border-bottom: 1px solid rgba(255,107,122,0.3); transition: border-color .2s; }
+    .step-body a:hover { border-color: #ff6b7a; }
+    .step-body .note {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      background: var(--green-bg);
+      border: 1px solid var(--green-border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #86efac;
+    }
+    .step-body .code-hint {
+      display: inline-block;
+      margin-top: 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: var(--text-dim);
+      font-family: monospace;
+      letter-spacing: 1px;
+    }
+
+    /* ── FAQ ── */
+    .faq-section {
+      max-width: 680px;
+      margin: 0 auto 80px;
+      padding: 0 24px;
+    }
+    .faq-section h2 {
+      font-family: var(--font-h);
+      font-size: 32px;
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .faq-item:hover { border-color: rgba(208,2,27,0.25); }
+    .faq-q {
+      width: 100%;
+      background: var(--bg-card);
+      border: none;
+      padding: 18px 20px;
+      text-align: left;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: background .2s;
+    }
+    .faq-q:hover { background: var(--bg-surface); }
+    .faq-q .arrow { color: var(--red); font-size: 18px; transition: transform .25s; flex-shrink: 0; }
+    .faq-q.open .arrow { transform: rotate(45deg); }
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .3s ease, padding .3s ease;
+      background: var(--bg-card);
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.75;
+    }
+    .faq-a.open { max-height: 300px; padding: 0 20px 18px; }
+    .faq-a strong { color: var(--text); }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      padding: 40px 24px 80px;
+    }
+    .cta-section h2 { font-family: var(--font-h); font-size: 36px; letter-spacing: 2px; margin-bottom: 12px; }
+    .cta-section p { color: var(--text-dim); margin-bottom: 28px; }
+    .cta-btn {
+      display: inline-block;
+      background: var(--red);
+      color: #fff;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-family: var(--font-h);
+      font-size: 20px;
+      letter-spacing: 1.5px;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 20px rgba(208,2,27,0.3);
+    }
+    .cta-btn:hover { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(208,2,27,0.4); }
+
+    /* ── COST TABLE ── */
+    .cost-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-top: 16px;
+    }
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .cost-row:last-child { border-bottom: none; }
+    .cost-row .label { color: var(--text-dim); }
+    .cost-row .value { font-weight: 600; color: var(--green); }
+    .cost-row .value.zero { color: var(--green); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 40px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    footer a { color: var(--red); text-decoration: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 16px 20px; }
+      .step-card { flex-direction: column; gap: 12px; }
+      .hero { padding: 50px 20px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="https://www.mandrakesystem.com">MANDRAKE</a>
+  <a class="back-btn" href="https://www.mandrakesystem.com">← Torna all'Academy</a>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">Guida rapida · 3 minuti</div>
+  <h1>La tua <span>API Key</span><br>Google Gemini</h1>
+  <p>Come ottenerla gratis, perché serve una carta e perché non ti costerà nulla.</p>
+  <div class="time-badge">
+    <span class="dot"></span>
+    Configurazione in 3 minuti · Completamente gratuita per uso normale
+  </div>
+</section>
+
+<!-- REASSURANCE -->
+<div class="reassurance">
+  <div class="reassurance-box">
+    <div class="icon">💚</div>
+    <div>
+      <h3>Non ti verrà addebitato nulla — ecco perché</h3>
+      <p>Google richiede un metodo di pagamento non per farti pagare, ma per <strong>sbloccare la quota gratuita estesa</strong>. È un sistema di verifica dell'identità. Con Gemini Flash (il modello che usiamo), ogni messaggio costa circa <strong>$0.0001</strong> — un centesimo ogni 100 messaggi. Per uso normale dell'assistente Mandrake AI, la spesa mensile è letteralmente <strong>€0</strong>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<section class="steps-section">
+  <h2>COME SI FA</h2>
+
+  <div class="step-card">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <h3>Vai su Google AI Studio</h3>
+      <p>Apri <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a> e accedi con il tuo account Google. Se non hai un account Google, creane uno gratuito su gmail.com.</p>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <h3>Crea la tua API Key</h3>
+      <p>Clicca il bottone <strong style="color:#fff">"Create API Key"</strong> in alto a sinistra. Scegli "Create API key in new project" per creare un progetto dedicato. La chiave viene generata in pochi secondi.</p>
+      <div class="code-hint">AIzaSy... ← sarà simile a questo</div>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <h3>Attiva la fatturazione (se richiesto)</h3>
+      <p>Se Google ti chiede di attivare la fatturazione, vai su <a href="https://console.cloud.google.com/billing" target="_blank">console.cloud.google.com/billing</a>, crea un account di fatturazione e aggiungi la tua carta di credito o debito.</p>
+      <div class="note">✅ Non verrà addebitato nulla. La carta serve solo per verificare l'identità e sbloccare la quota gratuita.</div>
+
+      <div class="cost-box" style="margin-top:14px;">
+        <div class="cost-row">
+          <span class="label">Messaggi al giorno (uso normale)</span>
+          <span class="value zero">~€0.00</span>
+        </div>
+        <div class="cost-row">
+          <span class="label">Costo per 1.000 messaggi</span>
+          <span class="value">~€0.10</span>
+        </div>
+        <div class="cost-row">
+          <span class="label">Soglia gratuita mensile Google</span>
+          <span class="value">1.500 richieste/giorno</span>
+        </div>
+        <div class="cost-row">
+          <span class="label">Addebito minimo Google</span>
+          <span class="value">Solo se superi la soglia</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <h3>Incolla la chiave nel widget Mandrake AI</h3>
+      <p>Copia la chiave generata (inizia con <span style="font-family:monospace;color:#aaa">AIza...</span>), torna sul sito Mandrake Academy, apri il widget AI e incollala nel campo apposito. Clicca <strong style="color:#fff">"Attiva"</strong> — da quel momento hai messaggi illimitati!</p>
+      <div class="note">🔒 La chiave viene usata solo dal tuo browser e non viene condivisa con nessuno.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <h2>DOMANDE FREQUENTI</h2>
+
+  <div class="faq-item">
+    <button class="faq-q">
+      Posso rimuovere la carta dopo aver creato la key?
+      <span class="arrow">+</span>
+    </button>
+    <div class="faq-a">Tecnicamente sì, ma non è necessario. Google non addebita nulla finché non superi le soglie gratuite, che per uso normale non raggiungerai mai. Lasciare la carta collegata non comporta alcun rischio.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q">
+      La mia API Key è sicura? Qualcuno può usarla?
+      <span class="arrow">+</span>
+    </button>
+    <div class="faq-a">La chiave viene salvata solo nel tuo browser (nella memoria della sessione) e viene inviata direttamente a Google. Non viene mai salvata sui nostri server. Per sicurezza, puoi sempre revocarla da AI Studio se pensi che sia stata compromessa, e crearne una nuova.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q">
+      Cosa succede se supero la quota gratuita?
+      <span class="arrow">+</span>
+    </button>
+    <div class="faq-a">Google invia sempre un'email di avviso prima di addebitare qualcosa. Puoi impostare <strong>budget alert</strong> su Google Cloud per ricevere notifiche se si avvicina una soglia di spesa. Con uso normale del chatbot, è praticamente impossibile superare la quota gratuita.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q">
+      Qual è la differenza tra la mia key e i 5 messaggi gratuiti?
+      <span class="arrow">+</span>
+    </button>
+    <div class="faq-a">I 5 messaggi gratuiti al giorno sono coperti dalla chiave API di Mandrake Academy — sono un regalo per te, coperti da noi. Quando li esaurisci, se vuoi continuare devi usare la tua chiave personale, che attinge alla tua quota Google (gratuita per uso normale).</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q">
+      Il widget funziona anche senza la mia API Key?
+      <span class="arrow">+</span>
+    </button>
+    <div class="faq-a">Sì! Hai 5 messaggi gratuiti ogni giorno senza inserire nulla. La key personale serve solo se vuoi superare questo limite e usare il widget in modo illimitato.</div>
+  </div>
+
+  <div class="faq-item">
+    <button class="faq-q">
+      Ho problemi nella creazione. Come mi aiuto?
+      <span class="arrow">+</span>
+    </button>
+    <div class="faq-a">Puoi prenotare una consulenza personalizzata con il team Mandrake. Ti guidiamo passo passo nella configurazione. Prenota su <a href="https://www.mandrakesystem.com/prenotazione-consulenza" target="_blank">mandrakesystem.com/prenotazione-consulenza</a>.</div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>PRONTO A INIZIARE?</h2>
+  <p>Torna sull'Academy e usa Mandrake AI senza limiti.</p>
+  <a class="cta-btn" href="https://www.mandrakesystem.com">🚀 Torna all'Academy →</a>
+</section>
+
+<footer>
+  © 2025 Mandrake System · <a href="https://www.mandrakesystem.com">mandrakesystem.com</a>
+</footer>
+
+<script>
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.onclick = () => {
+      const answer = btn.nextElementSibling;
+      const isOpen = answer.classList.contains('open');
+      // Chiudi tutte
+      document.querySelectorAll('.faq-a').forEach(a => a.classList.remove('open'));
+      document.querySelectorAll('.faq-q').forEach(b => b.classList.remove('open'));
+      // Apri quella cliccata (se era chiusa)
+      if (!isOpen) {
+        answer.classList.add('open');
+        btn.classList.add('open');
+      }
+    };
+  });
+
+  // Animazione scroll per le step cards
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.style.opacity = 1;
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.step-card').forEach(c => observer.observe(c));
+</script>
+</body>
+</html>
