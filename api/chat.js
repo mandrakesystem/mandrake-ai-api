@@ -1,15 +1,13 @@
-// api/chat.js — Mandrake AI v3.2
+// api/chat.js — Mandrake AI v3.3
 
 export default async function handler(req, res) {
 
-  // ── CORS ──────────────────────────────────────────────────────────────────
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // ── PARSE BODY — stesso metodo del vecchio che funzionava ─────────────────
   let rawBody = '';
   for await (const chunk of req) rawBody += chunk;
   let parsed;
@@ -19,27 +17,14 @@ export default async function handler(req, res) {
   const { email, message, apiKey: userKey } = parsed;
   const apiKey = userKey || process.env.GOOGLE_API_KEY;
 
-  if (!email || !message) {
-    return res.status(400).json({ error: 'Missing email or message' });
-  }
+  if (!email || !message) return res.status(400).json({ error: 'Missing email or message' });
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-  // Headers GET Supabase — identici al vecchio che funzionava
-  const SB_GET = {
-    apikey: SUPABASE_KEY,
-    Authorization: `Bearer ${SUPABASE_KEY}`
-  };
+  const SB_GET   = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
+  const SB_WRITE = { ...SB_GET, 'Content-Type': 'application/json' };
 
-  // Headers POST/PATCH Supabase
-  const SB_WRITE = {
-    apikey: SUPABASE_KEY,
-    Authorization: `Bearer ${SUPABASE_KEY}`,
-    'Content-Type': 'application/json'
-  };
-
-  // ── SYSTEM PROMPT CON AFFILIAZIONI ────────────────────────────────────────
   const SYSTEM_PROMPT = `Sei Mandrake AI, l'assistente intelligente dell'Academy Mandrake System.
 Sei esperto di marketing digitale, funnels, Systeme.io, Facebook Ads, Google Ads, affiliazioni, automazioni, landing page ed email marketing.
 
@@ -58,7 +43,7 @@ REGOLE OBBLIGATORIE:
 7. Guida Systeme IT: https://help-it.systeme.io/`;
 
   try {
-    // ── 1. VERIFICA UTENTE — identico al vecchio che funzionava ──────────────
+    // 1. VERIFICA UTENTE — identico al vecchio che funzionava
     const userRes = await fetch(
       `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
       { headers: SB_GET }
@@ -69,17 +54,14 @@ REGOLE OBBLIGATORIE:
     if (!users || !users.length) {
       return res.status(200).json({ reply: '__NOT_REGISTERED__' });
     }
-
     const user = users[0];
-    console.log('USER:', user.email, '| messaggi_usati:', user.messaggi_usati, '| ultimo_reset:', user.ultimo_reset);
 
-    // ── 2. RESET GIORNALIERO (nuovo rispetto al vecchio) ──────────────────────
+    // 2. RESET GIORNALIERO
     const oggi = new Date().toISOString().split('T')[0];
     const ultimoReset = user.ultimo_reset ? String(user.ultimo_reset).split('T')[0] : null;
     let messaggiUsati = user.messaggi_usati || 0;
 
     if (ultimoReset !== oggi) {
-      console.log('RESET giornaliero — azzero contatore');
       messaggiUsati = 0;
       await fetch(
         `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
@@ -87,30 +69,25 @@ REGOLE OBBLIGATORIE:
       );
     }
 
-    // ── 3. LIMITE MESSAGGI ────────────────────────────────────────────────────
-    if (!userKey && messaggiUsati >= 5) {
-      console.log('LIMIT REACHED — messaggi usati:', messaggiUsati);
-      return res.status(200).json({ reply: '__LIMIT_REACHED__' });
-    }
-
-    // Ping di verifica email — non chiamare Gemini
+    // 3. PING — solo verifica email, non chiama Gemini
     if (message === '__ping__') {
       return res.status(200).json({ reply: '__PING_OK__', messaggi_rimasti: Math.max(0, 5 - messaggiUsati) });
     }
 
-    if (!apiKey) {
-      return res.status(400).json({ error: 'Missing API key' });
+    // 4. LIMITE
+    if (!userKey && messaggiUsati >= 5) {
+      return res.status(200).json({ reply: '__LIMIT_REACHED__' });
     }
 
-    // ── 4. CARICA STORICO CONVERSAZIONI ───────────────────────────────────────
+    if (!apiKey) return res.status(400).json({ error: 'Missing API key' });
+
+    // 5. STORICO CONVERSAZIONI
     const convRes = await fetch(
       `${SUPABASE_URL}/rest/v1/conversations?email=eq.${encodeURIComponent(email)}&order=created_at.asc&limit=16`,
       { headers: SB_GET }
     );
     const convHistory = await convRes.json();
-    console.log('HISTORY — righe:', Array.isArray(convHistory) ? convHistory.length : 'errore fetch');
 
-    // Costruisce contents per Gemini con storia + messaggio attuale
     const contents = [];
     if (Array.isArray(convHistory)) {
       convHistory.forEach(row => {
@@ -120,38 +97,46 @@ REGOLE OBBLIGATORIE:
     }
     contents.push({ role: 'user', parts: [{ text: message }] });
 
-    // ── 5. CHIAMATA GEMINI ────────────────────────────────────────────────────
-    // Usiamo gemini-1.5-flash che è stabile e disponibile su tutti gli account
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    console.log('GEMINI — turns in context:', contents.length);
+    // 6. GEMINI — prova modelli in ordine finché uno funziona
+    const MODELS = [
+      { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}` },
+      { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}` },
+      { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}` },
+    ];
 
-    const aiRes = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents,
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
-      })
-    });
+    let reply = null;
 
-    const aiData = await aiRes.json();
-    console.log('GEMINI — status:', aiRes.status, '| error:', aiData?.error?.message || 'nessuno');
+    for (const model of MODELS) {
+      console.log('GEMINI — trying:', model.url.split('/models/')[1].split(':')[0]);
+      try {
+        const aiRes = await fetch(model.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents,
+            generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+          })
+        });
+        const aiData = await aiRes.json();
 
-    if (!aiRes.ok) {
-      console.error('GEMINI ERROR:', JSON.stringify(aiData));
-      return res.status(500).json({ error: 'Errore Google AI', detail: aiData?.error?.message });
+        if (aiRes.ok && aiData.candidates?.[0]?.content?.parts?.[0]?.text) {
+          reply = aiData.candidates[0].content.parts[0].text;
+          console.log('GEMINI OK — model:', model.url.split('/models/')[1].split(':')[0], '| chars:', reply.length);
+          break;
+        } else {
+          console.log('GEMINI FAIL:', aiData?.error?.message || 'no candidates');
+        }
+      } catch (e) {
+        console.log('GEMINI FETCH ERROR:', e.message);
+      }
     }
 
-    const reply = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!reply) {
-      console.error('GEMINI — testo vuoto:', JSON.stringify(aiData).substring(0, 400));
-      return res.status(500).json({ error: 'Risposta Gemini vuota' });
+      return res.status(500).json({ error: 'Tutti i modelli Gemini hanno fallito. Controlla la API key.' });
     }
 
-    console.log('REPLY OK — chars:', reply.length, '| preview:', reply.substring(0, 80));
-
-    // ── 6. INCREMENTA CONTATORE ───────────────────────────────────────────────
+    // 7. INCREMENTA CONTATORE
     if (!userKey) {
       await fetch(
         `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
@@ -159,23 +144,14 @@ REGOLE OBBLIGATORIE:
       );
     }
 
-    // ── 7. SALVA CONVERSAZIONE (domanda + risposta) ───────────────────────────
+    // 8. SALVA CONVERSAZIONE
     await fetch(`${SUPABASE_URL}/rest/v1/conversations`, {
       method: 'POST',
       headers: SB_WRITE,
-      body: JSON.stringify({
-        email,
-        domanda: message,
-        risposta: reply,          // nuovo: salva anche la risposta AI
-        categoria: 'generale',
-        usa_propria_key: !!userKey
-      })
+      body: JSON.stringify({ email, domanda: message, risposta: reply, categoria: 'generale', usa_propria_key: !!userKey })
     });
 
-    return res.status(200).json({
-      reply,
-      messaggi_rimasti: userKey ? 999 : Math.max(0, 4 - messaggiUsati)
-    });
+    return res.status(200).json({ reply, messaggi_rimasti: userKey ? 999 : Math.max(0, 4 - messaggiUsati) });
 
   } catch (error) {
     console.error('SERVER ERROR:', error.message, '\n', error.stack);
