@@ -4,26 +4,22 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // 🔥 PARSE MANUALE BODY
-  let body = "";
+  // 🔥 Parse manuale body (compatibile Vercel)
+  let rawBody = "";
 
   for await (const chunk of req) {
-    body += chunk;
+    rawBody += chunk;
   }
 
+  let parsed;
   try {
-    body = JSON.parse(body);
-  } catch (err) {
-    return res.status(400).json({ error: "Invalid JSON body" });
+    parsed = JSON.parse(rawBody);
+  } catch {
+    return res.status(400).json({ error: "Invalid JSON" });
   }
 
-  const { email, message } = body;
-
-  if (!email || !message) {
-    return res.status(400).json({ error: "Missing email or message" });
-  }
-
-  const { email, message } = req.body;
+  const email = parsed.email;
+  const message = parsed.message;
 
   if (!email || !message) {
     return res.status(400).json({ error: "Missing email or message" });
@@ -94,7 +90,7 @@ export default async function handler(req, res) {
       aiData.candidates?.[0]?.content?.parts?.[0]?.text ||
       "Errore nella generazione risposta.";
 
-    // 4️⃣ Incremento contatore
+    // 4️⃣ Incrementa contatore
     await fetch(
       `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
       {
@@ -132,6 +128,6 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.log("SERVER ERROR:", error);
-    return res.status(500).json({ error: "Errore server", detail: error });
+    return res.status(500).json({ error: "Errore server", detail: error.message });
   }
 }
