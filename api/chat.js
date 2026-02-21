@@ -1,6 +1,7 @@
 // api/chat.js
 export default async function handler(req, res) {
   console.log("DEBUG: GOOGLE_API_KEY =", process.env.GOOGLE_API_KEY);
+
   // ✅ Accetta solo POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -17,7 +18,10 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Invalid JSON" });
   }
 
-  const { email, message, apiKey } = parsed;
+  const { email, message, apiKey: userKey } = parsed;
+
+  // Usa la chiave utente se fornita, altrimenti quella del server
+  const apiKey = userKey || process.env.GOOGLE_API_KEY;
 
   if (!email || !message || !apiKey) {
     return res.status(400).json({ error: "Missing email, message, or API key" });
@@ -105,6 +109,7 @@ export default async function handler(req, res) {
     );
 
     return res.status(200).json({ reply });
+
   } catch (error) {
     console.log("SERVER ERROR:", error);
     return res.status(500).json({ error: "Errore server", detail: error.message });
