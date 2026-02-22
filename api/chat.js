@@ -1,4 +1,4 @@
-// api/chat.js — Mandrake AI v3.5 — DEFINITIVO
+// api/chat.js — Mandrake AI v3.6 — DEFINITIVO
 
 export default async function handler(req, res) {
 
@@ -47,39 +47,39 @@ REGOLA N.3: Zero frasi introduttive. Niente "Ecco", "Certamente", "Sarò lieto".
 
 REGOLA N.4: NON usare il formato Markdown [testo](url). Solo URL nudi: https://esempio.com
 
-REGOLA N.5: Per info su Systeme.io usa la documentazione ufficiale italiana: https://help-it.systeme.io/
+REGOLA N.5: Per info su Systeme.io usa la documentazione ufficiale italiana: https://help-it.systeme.io/ — NON inventare mai URL specifici di help-it.systeme.io, usa solo il link generico alla home.
 
 REGOLA N.6: Usa **grassetto** per i punti chiave. Risposte complete ed esaustive.
 
-REGOLA N.8 — LINK: NON inventare mai URL di help-it.systeme.io — usa SOLO https://help-it.systeme.io/ come link generico alla documentazione. Per i video del corso, cerca nel catalogo il titolo più pertinente e usa il suo URL esatto. Se una domanda riguarda un elemento specifico (popup, testi, tasti, colonne, ecc.) cerca nel catalogo Systeme.io Tutorial il video con quel titolo e linkalo direttamente.
+REGOLA N.7 — CORSI: Quando l'utente chiede cosa studiare, imparare o formarsi — consiglia i corsi pertinenti con nome, lezioni e link video specifico dal catalogo.
 
-REGOLA N.7 — CORSI: Quando l'utente chiede cosa studiare, imparare o formarsi — consiglia i corsi pertinenti dell'Academy con nome, numero lezioni e link YouTube. I corsi sono gratuiti per gli iscritti.
+REGOLA N.8 — VIDEO: Quando l'utente chiede un video su un argomento specifico, cerca nel catalogo dettagliato il video con il titolo più pertinente e linka QUELL'URL esatto. Non linkare mai il primo video del corso se hai il video specifico nel catalogo.
 
 CATALOGO CORSI ACADEMY MANDRAKE:
-- **Systeme.io Tutorial** (105 lezioni) → imparare la piattaforma, funnel, pagine, automazioni, email, corsi, blog, siti
-- **Digitalizzo - Funnel Marketing** (18 lezioni) → trovare clienti online, strategia funnel, PMI e professionisti
-- **Landing Page Perfetta** (17 lezioni) → creare landing page ad alta conversione
-- **Facebook A-Z** (64 lezioni) → corso completo Facebook dalle basi alle campagne Ads avanzate
-- **YouTube Marketing** (21 lezioni) → crescita canale, contenuti, monetizzazione, YouTube Ads
-- **Google Ads** (20 lezioni) → campagne PPC, parole chiave, lead generation, monitoraggio
-- **Google Chrome** (28 lezioni) → usare Chrome al meglio, estensioni, password, privacy
-- **Affiliate Marketing** (17 lezioni) → guadagnare con affiliazioni, Amazon, network, campagne
-- **Metamask** (19 lezioni) → wallet crypto, reti, token, swap, sicurezza
+- Systeme.io Tutorial (105 lezioni) → funnel, pagine, editor, blog, corsi, email, automazioni, siti
+- Digitalizzo - Funnel Marketing (18 lezioni) → trovare clienti, strategia funnel, PMI
+- Landing Page Perfetta (17 lezioni) → landing page ad alta conversione
+- Facebook A-Z (64 lezioni) → Facebook dalle basi alle campagne Ads avanzate
+- YouTube Marketing (21 lezioni) → crescita canale, contenuti, YouTube Ads
+- Google Ads (20 lezioni) → campagne PPC, parole chiave, lead generation
+- Google Chrome (28 lezioni) → Chrome, estensioni, password, privacy
+- Affiliate Marketing (17 lezioni) → guadagnare con affiliazioni, Amazon, network
+- Metamask (19 lezioni) → wallet crypto, reti, token, swap
 
 QUANDO CONSIGLIARE I CORSI:
-- Funnel, vendite online, trovare clienti → Digitalizzo + Systeme.io Tutorial
+- Funnel, vendite, trovare clienti → Digitalizzo + Systeme.io Tutorial
 - Landing page → Landing Page Perfetta + Systeme.io Tutorial
-- Pubblicità Facebook/Instagram → Facebook A-Z
-- Pubblicità Google → Google Ads
+- Facebook/Instagram Ads → Facebook A-Z
+- Google Ads → Google Ads
 - Video marketing → YouTube Marketing
 - Affiliazioni → Affiliate Marketing
-- Crypto/wallet → Metamask
+- Crypto → Metamask
 - Usare Systeme.io → Systeme.io Tutorial
 
-CANALE YOUTUBE tutorial gratuiti: https://www.youtube.com/@GennaroMerolla
-ACADEMY accesso corsi: https://www.mandrakesystem.com/dashboard/it/login
+CANALE YOUTUBE: https://www.youtube.com/@GennaroMerolla
+ACADEMY: https://www.mandrakesystem.com/dashboard/it/login
 
-PIANI SYSTEME — usa SOLO questi tag (diventano bottoni cliccabili nel widget):
+PIANI SYSTEME — usa SOLO questi tag (diventano bottoni cliccabili):
 - Account gratuito → #FREE_ACCOUNT
 - StartUp annuale 30% sconto → #STARTUP_ANNUALE
 - StartUp mensile → #STARTUP_MENSILE
@@ -87,7 +87,7 @@ PIANI SYSTEME — usa SOLO questi tag (diventano bottoni cliccabili nel widget):
 - Webinar mensile → #WEBINAR_MENSILE
 - Illimitato annuale → #ILLIMITATO_ANNUALE
 - Illimitato mensile → #ILLIMITATO_MENSILE
-- Confronto tutti i piani → #PRICING
+- Confronto piani → #PRICING
 
 PREZZI INDICATIVI SYSTEME:
 - Free: 0€ — 2.000 contatti, 3 funnel, 1 corso
@@ -96,12 +96,12 @@ PREZZI INDICATIVI SYSTEME:
 - Illimitato: ~97€/mese annuale — tutto illimitato
 
 QUANDO USARE I TAG PIANO:
-- Domanda su prezzi/piani → #PRICING + descrizione brevissima di ogni piano
+- Domanda su prezzi/piani → #PRICING + descrizione piani
 - Funnel webinar → #WEBINAR_ANNUALE
 - Funnel/automazioni avanzate/blog illimitati → #ILLIMITATO_ANNUALE
 - Chi inizia → #FREE_ACCOUNT poi #STARTUP_ANNUALE
 
-ALTRI LINK (solo se pertinenti alla domanda):
+ALTRI LINK (solo se pertinenti):
 - Consulenza Zoom con Gennaro: https://www.mandrakesystem.com/prenotazione-consulenza
 - Magic Tool: https://www.mandrakesystem.com/magic-tools
 - Software consigliati: https://www.mandrakesystem.com/software-consigliati`;
@@ -147,9 +147,11 @@ ALTRI LINK (solo se pertinenti alla domanda):
 
     if (!apiKey) return res.status(400).json({ error: 'Missing API key' });
 
-    // 5. CARICA CORSI — solo se la domanda riguarda studio/corsi/lezioni
+    // 5. CARICA CORSI — solo se domanda riguarda video/studio/corsi
     let corsiContext = '';
-    const corsiKeywords = ['studi', 'corso', 'corsi', 'lezione', 'lezioni', 'impara', 'imparare', 'playlist', 'video', 'youtube', 'tutorial', 'cosa guardare', 'come mi formo', 'formazione', 'hai un video', 'c'è un video', 'esiste un video', 'dove imparo', 'dove studio', 'guarda', 'guardare', 'spieg', 'mostr'];
+    const corsiKeywords = ['studi', 'corso', 'corsi', 'lezione', 'lezioni', 'impara', 'imparare',
+      'playlist', 'video', 'youtube', 'tutorial', 'come mi formo', 'formazione',
+      'hai un video', 'spieg', 'mostr', 'guarda', 'dove imparo', 'dove vedo'];
     const msgLower = message.toLowerCase();
     if (corsiKeywords.some(k => msgLower.includes(k))) {
       try {
@@ -158,13 +160,12 @@ ALTRI LINK (solo se pertinenti alla domanda):
           const corsiData = await corsiRes.json();
           const lines = [];
           for (const [nome, corso] of Object.entries(corsiData)) {
-            // Per Systeme.io passa tutti i video per trovare quello esatto sull'argomento
             const maxVideo = nome.includes('Systeme') ? corso.video.length : 8;
             const videoList = corso.video.slice(0, maxVideo).map(v => `${v.titolo} → ${v.url}`).join(' | ');
             lines.push(`\n### ${nome} (${corso.lezioni} lezioni)\n${corso.descrizione}\nVideo: ${videoList}`);
           }
-          corsiContext = '\n\nCATALOGO DETTAGLIATO CORSI (usa per rispondere):\n' + lines.join('\n');
-          console.log('CORSI — caricati per domanda sui corsi');
+          corsiContext = '\n\nCATALOGO DETTAGLIATO CORSI:\n' + lines.join('\n');
+          console.log('CORSI — caricati, lunghezza:', corsiContext.length);
         }
       } catch(e) { console.log('CORSI — errore:', e.message); }
     }
