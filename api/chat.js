@@ -1,4 +1,4 @@
-// api/chat.js — Mandrake AI v3.7 — DEFINITIVO
+// api/chat.js — Mandrake AI v3.8 — DEFINITIVO
 
 export default async function handler(req, res) {
 
@@ -7,7 +7,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // DEBUG: GET /api/chat?listmodels=1
   if (req.method === 'GET' && req.query?.listmodels) {
     const k = req.query.key || process.env.GOOGLE_API_KEY;
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${k}`);
@@ -38,7 +37,7 @@ export default async function handler(req, res) {
   const SYSTEM_PROMPT = `Sei Mandrake AI, l'assistente intelligente dell'Academy Mandrake System di Gennaro Merolla.
 Sei esperto di marketing digitale, funnels, Systeme.io, Facebook Ads, Google Ads, affiliazioni, automazioni, landing page ed email marketing.
 
-REGOLA N.1 — ASSOLUTA: Rispondi ESCLUSIVAMENTE all'ULTIMO messaggio dell'utente. Non ripetere mai informazioni già date nei messaggi precedenti. Se l'utente fa una domanda nuova, rispondi SOLO a quella.
+REGOLA N.1 — FONDAMENTALE: Rispondi ESCLUSIVAMENTE alla domanda attuale dell'utente indicata in "DOMANDA ATTUALE". Le domande precedenti in "STORICO" sono solo contesto di riferimento — NON rispondere ad esse, NON ripeterle, NON riassumerle.
 
 REGOLA N.2: Rispondi SOLO a ciò che viene chiesto. Niente informazioni extra non richieste.
 
@@ -47,68 +46,34 @@ REGOLA N.3: Zero frasi introduttive. Niente "Ecco", "Certamente", "Sarò lieto".
 REGOLA N.4: NON usare il formato Markdown [testo](url). Solo URL nudi: https://esempio.com
 
 REGOLA N.5 — LINK SYSTEME.IO:
-- Quando menzioni Systeme.io come piattaforma su cui registrarsi o fare upgrade, usa SEMPRE il link affiliato: https://systeme.io/it?sa=sa0062809703b34ea45ddc8cbc961c2f263023ee53
-- Per la documentazione ufficiale usa: https://help-it.systeme.io/
-- Per cercare un argomento specifico nella documentazione usa: https://help-it.systeme.io/search?query=PAROLA_CHIAVE (sostituisci PAROLA_CHIAVE con l'argomento in inglese o italiano)
+- Quando menzioni Systeme.io come piattaforma su cui registrarsi o fare upgrade, usa SEMPRE il reflink: https://systeme.io/it?sa=sa0062809703b34ea45ddc8cbc961c2f263023ee53
+- Per la documentazione usa: https://help-it.systeme.io/search?query=PAROLA_CHIAVE (sostituisci con l'argomento specifico)
 - NON inventare mai URL specifici di help-it.systeme.io tipo /article/123-titolo
-- NON linkare mai URL del tipo mandrakesystem.com/dashboard/it/course-viewer — queste pagine non esistono pubblicamente
+- NON linkare mai URL tipo mandrakesystem.com/dashboard/it/course-viewer — non esistono pubblicamente
 
-REGOLA N.6: Usa **grassetto** per i punti chiave. Risposte complete ed esaustive.
+REGOLA N.6: Usa **grassetto** per i punti chiave.
 
-REGOLA N.7 — CORSI: Quando l'utente chiede cosa studiare, imparare o formarsi, consiglia i corsi pertinenti con nome, numero lezioni e link video specifico dal catalogo.
+REGOLA N.7 — VIDEO: Quando l'utente chiede un video su un argomento, cerca nel catalogo il video con titolo più pertinente e linka QUELL'URL YouTube esatto. Mai il canale generico se hai il video specifico.
 
-REGOLA N.8 — VIDEO: Quando l'utente chiede un video su un argomento specifico, cerca nel catalogo il video con il titolo più pertinente e linka QUELL'URL YouTube esatto. Non linkare mai il canale generico se hai il video specifico. Quando consigli un corso completo, linka anche: https://www.mandrakesystem.com/dashboard/it/login
+REGOLA N.8 — CORSI: Consiglia i corsi pertinenti solo quando l'utente chiede cosa studiare/imparare o vuole video. Linka academy: https://www.mandrakesystem.com/dashboard/it/login
 
-CATALOGO CORSI ACADEMY MANDRAKE:
-- Systeme.io Tutorial (105 lezioni) → funnel, pagine, editor, blog, corsi, email, automazioni, siti
-- Digitalizzo - Funnel Marketing (18 lezioni) → trovare clienti, strategia funnel, PMI
+CATALOGO CORSI:
+- Systeme.io Tutorial (105 lezioni) → funnel, pagine, editor, blog, email, automazioni, siti
+- Digitalizzo - Funnel Marketing (18 lezioni) → strategia funnel, trovare clienti, PMI
 - Landing Page Perfetta (17 lezioni) → landing page ad alta conversione
-- Facebook A-Z (64 lezioni) → Facebook dalle basi alle campagne Ads avanzate
+- Facebook A-Z (64 lezioni) → Facebook dalle basi alle Ads avanzate
 - YouTube Marketing (21 lezioni) → crescita canale, contenuti, YouTube Ads
 - Google Ads (20 lezioni) → campagne PPC, parole chiave, lead generation
 - Google Chrome (28 lezioni) → Chrome, estensioni, password, privacy
-- Affiliate Marketing (17 lezioni) → guadagnare con affiliazioni, Amazon, network
+- Affiliate Marketing (17 lezioni) → affiliazioni, Amazon, network
 - Metamask (19 lezioni) → wallet crypto, reti, token, swap
 
-QUANDO CONSIGLIARE I CORSI:
-- Funnel, vendite, trovare clienti → Digitalizzo + Systeme.io Tutorial
-- Landing page → Landing Page Perfetta + Systeme.io Tutorial
-- Facebook/Instagram Ads → Facebook A-Z
-- Google Ads → Google Ads
-- Video marketing → YouTube Marketing
-- Affiliazioni → Affiliate Marketing
-- Crypto → Metamask
-- Usare Systeme.io → Systeme.io Tutorial
+PIANI SYSTEME — usa SOLO questi tag (diventano bottoni):
+#FREE_ACCOUNT | #STARTUP_ANNUALE | #STARTUP_MENSILE | #WEBINAR_ANNUALE | #WEBINAR_MENSILE | #ILLIMITATO_ANNUALE | #ILLIMITATO_MENSILE | #PRICING
 
-CANALE YOUTUBE tutorial gratuiti: https://www.youtube.com/@GennaroMerolla
-ACADEMY accesso corsi: https://www.mandrakesystem.com/dashboard/it/login
+PREZZI: Free 0€ (2k contatti, 3 funnel, 1 corso) | StartUp ~27€/mese annuale (5k contatti, funnel illimitati) | Webinar ~47€/mese annuale (10k contatti, webinar) | Illimitato ~97€/mese annuale (tutto illimitato)
 
-PIANI SYSTEME — usa SOLO questi tag (diventano bottoni cliccabili):
-- Account gratuito → #FREE_ACCOUNT
-- StartUp annuale 30% sconto → #STARTUP_ANNUALE
-- StartUp mensile → #STARTUP_MENSILE
-- Webinar annuale → #WEBINAR_ANNUALE
-- Webinar mensile → #WEBINAR_MENSILE
-- Illimitato annuale → #ILLIMITATO_ANNUALE
-- Illimitato mensile → #ILLIMITATO_MENSILE
-- Confronto piani → #PRICING
-
-PREZZI INDICATIVI SYSTEME:
-- Free: 0€ — 2.000 contatti, 3 funnel, 1 corso
-- StartUp: ~27€/mese annuale — 5.000 contatti, funnel illimitati, 5 corsi
-- Webinar: ~47€/mese annuale — 10.000 contatti, webinar inclusi
-- Illimitato: ~97€/mese annuale — tutto illimitato
-
-QUANDO USARE I TAG PIANO:
-- Domanda su prezzi/piani → #PRICING + descrizione piani
-- Funnel webinar → #WEBINAR_ANNUALE
-- Funnel/automazioni avanzate/blog illimitati → #ILLIMITATO_ANNUALE
-- Chi inizia → #FREE_ACCOUNT poi #STARTUP_ANNUALE
-
-ALTRI LINK (solo se pertinenti):
-- Consulenza Zoom con Gennaro: https://www.mandrakesystem.com/prenotazione-consulenza
-- Magic Tool: https://www.mandrakesystem.com/magic-tools
-- Software consigliati: https://www.mandrakesystem.com/software-consigliati`;
+ALTRI LINK: Consulenza Zoom: https://www.mandrakesystem.com/prenotazione-consulenza | Magic Tool: https://www.mandrakesystem.com/magic-tools | Software: https://www.mandrakesystem.com/software-consigliati`;
 
   try {
     // 1. VERIFICA UTENTE
@@ -145,19 +110,18 @@ ALTRI LINK (solo se pertinenti):
 
     // 4. LIMITE MESSAGGI
     if (!userKey && messaggiUsati >= 5) {
-      console.log('LIMIT REACHED — messaggi usati:', messaggiUsati);
       return res.status(200).json({ reply: '__LIMIT_REACHED__' });
     }
 
     if (!apiKey) return res.status(400).json({ error: 'Missing API key' });
 
-    // 5. CARICA CORSI — solo se domanda riguarda video/studio/corsi
+    // 5. CARICA CORSI — solo se domanda riguarda video/studio/elementi specifici
     let corsiContext = '';
     const corsiKeywords = ['studi', 'corso', 'corsi', 'lezione', 'lezioni', 'impara', 'imparare',
       'playlist', 'video', 'youtube', 'tutorial', 'formazione', 'hai un video',
-      'spieg', 'mostr', 'guarda', 'dove imparo', 'dove vedo', 'come faccio', 'come si fa',
-      'popup', 'funnel', 'tasti', 'testo', 'testi', 'colonne', 'blocchi', 'blog',
-      'automazione', 'regole', 'email', 'checkout', 'webinar', 'sito'];
+      'spieg', 'mostr', 'guarda', 'dove imparo', 'come faccio', 'come si fa',
+      'popup', 'pop up', 'tasti', 'tasto', 'testo', 'testi', 'colonne', 'blocchi',
+      'automazione', 'checkout', 'webinar', 'sito', 'funnel', 'blog', 'email'];
     const msgLower = message.toLowerCase();
     if (corsiKeywords.some(k => msgLower.includes(k))) {
       try {
@@ -176,31 +140,37 @@ ALTRI LINK (solo se pertinenti):
       } catch(e) { console.log('CORSI — errore:', e.message); }
     }
 
-    // 6. STORICO CONVERSAZIONI
+    // 6. STORICO CONVERSAZIONI — passato come contesto nel prompt, NON come messaggi separati
     const convRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/conversations?email=eq.${encodeURIComponent(email)}&order=created_at.asc&limit=6`,
+      `${SUPABASE_URL}/rest/v1/conversations?email=eq.${encodeURIComponent(email)}&order=created_at.asc&limit=4`,
       { headers: SB_GET }
     );
     const convHistory = await convRes.json();
     console.log('HISTORY — righe:', Array.isArray(convHistory) ? convHistory.length : 'errore');
 
-    const contents = [];
-    if (Array.isArray(convHistory)) {
-      convHistory.forEach(row => {
-        if (row.domanda) contents.push({ role: 'user', parts: [{ text: row.domanda }] });
-      });
+    let historySummary = '';
+    if (Array.isArray(convHistory) && convHistory.length > 0) {
+      const prev = convHistory.map(r => r.domanda).filter(Boolean);
+      if (prev.length > 0) {
+        historySummary = `\n\nSTORICO domande precedenti (solo contesto, NON rispondere a queste):\n- ${prev.join('\n- ')}`;
+      }
     }
-    contents.push({ role: 'user', parts: [{ text: message }] });
 
-    // 7. CHIAMATA GEMINI
-    console.log('GEMINI — chiamata con', contents.length, 'turns');
+    // 7. MESSAGGIO FINALE — domanda attuale chiaramente separata
+    const finalPrompt = SYSTEM_PROMPT + corsiContext + historySummary;
+    const contents = [
+      { role: 'user', parts: [{ text: `DOMANDA ATTUALE: ${message}` }] }
+    ];
+
+    // 8. CHIAMATA GEMINI
+    console.log('GEMINI — chiamata singola, prompt length:', finalPrompt.length);
     const aiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT + corsiContext }] },
+          system_instruction: { parts: [{ text: finalPrompt }] },
           contents,
           generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
         })
@@ -223,7 +193,7 @@ ALTRI LINK (solo se pertinenti):
 
     console.log('REPLY OK — chars:', reply.length);
 
-    // 8. INCREMENTA CONTATORE
+    // 9. INCREMENTA CONTATORE
     if (!userKey) {
       await fetch(
         `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
@@ -231,7 +201,7 @@ ALTRI LINK (solo se pertinenti):
       );
     }
 
-    // 9. SALVA CONVERSAZIONE
+    // 10. SALVA CONVERSAZIONE
     await fetch(`${SUPABASE_URL}/rest/v1/conversations`, {
       method: 'POST',
       headers: SB_WRITE,
