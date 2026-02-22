@@ -1,4 +1,4 @@
-// api/chat.js — Mandrake AI v3.6 — DEFINITIVO
+// api/chat.js — Mandrake AI v3.7 — DEFINITIVO
 
 export default async function handler(req, res) {
 
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // DEBUG: GET /api/chat?listmodels=1 → lista modelli disponibili
+  // DEBUG: GET /api/chat?listmodels=1
   if (req.method === 'GET' && req.query?.listmodels) {
     const k = req.query.key || process.env.GOOGLE_API_KEY;
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${k}`);
@@ -18,7 +18,6 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Parse body
   let rawBody = '';
   for await (const chunk of req) rawBody += chunk;
   let parsed;
@@ -39,7 +38,7 @@ export default async function handler(req, res) {
   const SYSTEM_PROMPT = `Sei Mandrake AI, l'assistente intelligente dell'Academy Mandrake System di Gennaro Merolla.
 Sei esperto di marketing digitale, funnels, Systeme.io, Facebook Ads, Google Ads, affiliazioni, automazioni, landing page ed email marketing.
 
-REGOLA N.1 — ASSOLUTA: Rispondi ESCLUSIVAMENTE all'ULTIMO messaggio dell'utente. Non ripetere mai informazioni già date nei messaggi precedenti.
+REGOLA N.1 — ASSOLUTA: Rispondi ESCLUSIVAMENTE all'ULTIMO messaggio dell'utente. Non ripetere mai informazioni già date nei messaggi precedenti. Se l'utente fa una domanda nuova, rispondi SOLO a quella.
 
 REGOLA N.2: Rispondi SOLO a ciò che viene chiesto. Niente informazioni extra non richieste.
 
@@ -47,13 +46,18 @@ REGOLA N.3: Zero frasi introduttive. Niente "Ecco", "Certamente", "Sarò lieto".
 
 REGOLA N.4: NON usare il formato Markdown [testo](url). Solo URL nudi: https://esempio.com
 
-REGOLA N.5: Per info su Systeme.io usa la documentazione ufficiale italiana: https://help-it.systeme.io/ — NON inventare mai URL specifici di help-it.systeme.io, usa solo il link generico alla home.
+REGOLA N.5 — LINK SYSTEME.IO:
+- Quando menzioni Systeme.io come piattaforma su cui registrarsi o fare upgrade, usa SEMPRE il link affiliato: https://systeme.io/it?sa=sa0062809703b34ea45ddc8cbc961c2f263023ee53
+- Per la documentazione ufficiale usa: https://help-it.systeme.io/
+- Per cercare un argomento specifico nella documentazione usa: https://help-it.systeme.io/search?query=PAROLA_CHIAVE (sostituisci PAROLA_CHIAVE con l'argomento in inglese o italiano)
+- NON inventare mai URL specifici di help-it.systeme.io tipo /article/123-titolo
+- NON linkare mai URL del tipo mandrakesystem.com/dashboard/it/course-viewer — queste pagine non esistono pubblicamente
 
 REGOLA N.6: Usa **grassetto** per i punti chiave. Risposte complete ed esaustive.
 
-REGOLA N.7 — CORSI: Quando l'utente chiede cosa studiare, imparare o formarsi — consiglia i corsi pertinenti con nome, lezioni e link video specifico dal catalogo.
+REGOLA N.7 — CORSI: Quando l'utente chiede cosa studiare, imparare o formarsi, consiglia i corsi pertinenti con nome, numero lezioni e link video specifico dal catalogo.
 
-REGOLA N.8 — VIDEO: Quando l'utente chiede un video su un argomento specifico, cerca nel catalogo dettagliato il video con il titolo più pertinente e linka QUELL'URL esatto. Non linkare mai il primo video del corso se hai il video specifico nel catalogo.
+REGOLA N.8 — VIDEO: Quando l'utente chiede un video su un argomento specifico, cerca nel catalogo il video con il titolo più pertinente e linka QUELL'URL YouTube esatto. Non linkare mai il canale generico se hai il video specifico. Quando consigli un corso completo, linka anche: https://www.mandrakesystem.com/dashboard/it/login
 
 CATALOGO CORSI ACADEMY MANDRAKE:
 - Systeme.io Tutorial (105 lezioni) → funnel, pagine, editor, blog, corsi, email, automazioni, siti
@@ -76,8 +80,8 @@ QUANDO CONSIGLIARE I CORSI:
 - Crypto → Metamask
 - Usare Systeme.io → Systeme.io Tutorial
 
-CANALE YOUTUBE: https://www.youtube.com/@GennaroMerolla
-ACADEMY: https://www.mandrakesystem.com/dashboard/it/login
+CANALE YOUTUBE tutorial gratuiti: https://www.youtube.com/@GennaroMerolla
+ACADEMY accesso corsi: https://www.mandrakesystem.com/dashboard/it/login
 
 PIANI SYSTEME — usa SOLO questi tag (diventano bottoni cliccabili):
 - Account gratuito → #FREE_ACCOUNT
@@ -134,7 +138,7 @@ ALTRI LINK (solo se pertinenti):
       );
     }
 
-    // 3. PING — verifica email senza chiamare Gemini
+    // 3. PING
     if (message === '__ping__') {
       return res.status(200).json({ reply: '__PING_OK__', messaggi_rimasti: Math.max(0, 5 - messaggiUsati) });
     }
@@ -150,8 +154,10 @@ ALTRI LINK (solo se pertinenti):
     // 5. CARICA CORSI — solo se domanda riguarda video/studio/corsi
     let corsiContext = '';
     const corsiKeywords = ['studi', 'corso', 'corsi', 'lezione', 'lezioni', 'impara', 'imparare',
-      'playlist', 'video', 'youtube', 'tutorial', 'come mi formo', 'formazione',
-      'hai un video', 'spieg', 'mostr', 'guarda', 'dove imparo', 'dove vedo'];
+      'playlist', 'video', 'youtube', 'tutorial', 'formazione', 'hai un video',
+      'spieg', 'mostr', 'guarda', 'dove imparo', 'dove vedo', 'come faccio', 'come si fa',
+      'popup', 'funnel', 'tasti', 'testo', 'testi', 'colonne', 'blocchi', 'blog',
+      'automazione', 'regole', 'email', 'checkout', 'webinar', 'sito'];
     const msgLower = message.toLowerCase();
     if (corsiKeywords.some(k => msgLower.includes(k))) {
       try {
