@@ -51,6 +51,8 @@ REGOLA N.5: Per info su Systeme.io usa la documentazione ufficiale italiana: htt
 
 REGOLA N.6: Usa **grassetto** per i punti chiave. Risposte complete ed esaustive.
 
+REGOLA N.8 — LINK: NON inventare mai URL di help-it.systeme.io — usa SOLO https://help-it.systeme.io/ come link generico alla documentazione. Per i video del corso, cerca nel catalogo il titolo più pertinente e usa il suo URL esatto. Se una domanda riguarda un elemento specifico (popup, testi, tasti, colonne, ecc.) cerca nel catalogo Systeme.io Tutorial il video con quel titolo e linkalo direttamente.
+
 REGOLA N.7 — CORSI: Quando l'utente chiede cosa studiare, imparare o formarsi — consiglia i corsi pertinenti dell'Academy con nome, numero lezioni e link YouTube. I corsi sono gratuiti per gli iscritti.
 
 CATALOGO CORSI ACADEMY MANDRAKE:
@@ -147,7 +149,7 @@ ALTRI LINK (solo se pertinenti alla domanda):
 
     // 5. CARICA CORSI — solo se la domanda riguarda studio/corsi/lezioni
     let corsiContext = '';
-    const corsiKeywords = ['studi', 'corso', 'corsi', 'lezione', 'lezioni', 'impara', 'imparare', 'playlist', 'video', 'youtube', 'tutorial', 'cosa guardare', 'come mi formo', 'formazione'];
+    const corsiKeywords = ['studi', 'corso', 'corsi', 'lezione', 'lezioni', 'impara', 'imparare', 'playlist', 'video', 'youtube', 'tutorial', 'cosa guardare', 'come mi formo', 'formazione', 'hai un video', 'c'è un video', 'esiste un video', 'dove imparo', 'dove studio', 'guarda', 'guardare', 'spieg', 'mostr'];
     const msgLower = message.toLowerCase();
     if (corsiKeywords.some(k => msgLower.includes(k))) {
       try {
@@ -156,8 +158,10 @@ ALTRI LINK (solo se pertinenti alla domanda):
           const corsiData = await corsiRes.json();
           const lines = [];
           for (const [nome, corso] of Object.entries(corsiData)) {
-            const videoList = corso.video.slice(0, 5).map(v => `${v.titolo} → ${v.url}`).join(' | ');
-            lines.push(`\n### ${nome} (${corso.lezioni} lezioni)\n${corso.descrizione}\nPrimi video: ${videoList}`);
+            // Per Systeme.io passa tutti i video per trovare quello esatto sull'argomento
+            const maxVideo = nome.includes('Systeme') ? corso.video.length : 8;
+            const videoList = corso.video.slice(0, maxVideo).map(v => `${v.titolo} → ${v.url}`).join(' | ');
+            lines.push(`\n### ${nome} (${corso.lezioni} lezioni)\n${corso.descrizione}\nVideo: ${videoList}`);
           }
           corsiContext = '\n\nCATALOGO DETTAGLIATO CORSI (usa per rispondere):\n' + lines.join('\n');
           console.log('CORSI — caricati per domanda sui corsi');
