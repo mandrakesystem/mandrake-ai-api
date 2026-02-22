@@ -149,7 +149,34 @@ ALTRI LINK (solo se pertinenti):
 
     if (!apiKey) return res.status(400).json({ error: 'Missing API key' });
 
-    // 5. STORICO CONVERSAZIONI — solo colonne che esistono: domanda, categoria
+    // 5. CARICA CORSI — solo se la domanda riguarda studio/corsi/lezioni
+    let corsiContext = '';
+    const corsiKeywords = ['studi', 'corso', 'corsi', 'lezione', 'lezioni', 'impara', 'imparare', 'playlist', 'video', 'youtube', 'tutorial', 'cosa guardare', 'cosa vedere', 'come mi formo', 'formazione', 'apprendere'];
+    const msgLower = message.toLowerCase();
+    if (corsiKeywords.some(k => msgLower.includes(k))) {
+      try {
+        const corsiUrl = 'https://mandrake-ai-api.vercel.app/corsi.json';
+        const corsiRes = await fetch(corsiUrl);
+        if (corsiRes.ok) {
+          const corsiData = await corsiRes.json();
+          const lines = [];
+          for (const [nome, corso] of Object.entries(corsiData)) {
+            lines.push(`
+### ${nome} (${corso.lezioni} lezioni)
+${corso.descrizione}
+Video principali: ${corso.video.slice(0,5).map(v => v.titolo + ' → ' + v.url).join(' | ')}`);
+          }
+          corsiContext = '
+
+CATALOGO CORSI ACADEMY (usa questi dati per rispondere):
+' + lines.join('
+');
+          console.log('CORSI — caricati per domanda sui corsi');
+        }
+      } catch(e) { console.log('CORSI — errore caricamento:', e.message); }
+    }
+
+    // 5b. STORICO CONVERSAZIONI — solo colonne che esistono: domanda, categoria
     const convRes = await fetch(
       `${SUPABASE_URL}/rest/v1/conversations?email=eq.${encodeURIComponent(email)}&order=created_at.asc&limit=6`,
       { headers: SB_GET }
@@ -174,7 +201,7 @@ ALTRI LINK (solo se pertinenti):
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT + corsiContext }] },
           contents,
           generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
         })
